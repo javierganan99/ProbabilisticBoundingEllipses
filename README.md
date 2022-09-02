@@ -7,3 +7,5 @@
 The method tracks a single moving-object using a probabilistic distribution that is updated event by event, but the processing of each event involves few low-cost operations, enabling online execution on resource-constrained onboard computers. The method has been experimentally validated in several real scenarios under different lighting conditions, evidencing its accurate performance, and some of the recorded bag files are available in the bag folder of this respository.
 
 The content of this source code is detailed in the Master Thesis.
+
+This code has been tested in Python 3.8.10 version.
