@@ -13,8 +13,8 @@ for gpu in gpus:
 
 import rospy
 import argparse
-bag_name = "urban"
-path = "bags/"
+bag_name = "1"
+path = "bags/MiddleDistance/"
 
 path = path + bag_name + ".bag"  # Path to read the bag
 bag = rosbag.Bag(path)  # Bag object
@@ -38,7 +38,6 @@ def main(args):
     t = 0  # Time from the initialization
     cont_events = 0
     time_offset = 0
-    cont_saved = 0
     dens = 0
     timestamp_ant = rospy.Time.from_sec(bag.get_start_time())
     # Loop to process all the images
@@ -127,10 +126,6 @@ def main(args):
         cv2.putText(im0, text, (int(cols/1.5),int(rows/8)), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
         cv2.imshow("Person", im0)
 
-        if args.SAVE_IMAGE:
-            saveImage(im0, pred_model, cont_saved)
-            cont_saved += 1
-
         if args.NO_EVENT_IMAGE:
             cv2.imshow("Event_image", event_image)
             event_image *= 0.0
@@ -154,7 +149,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--PLOT_DENSITY", action="store_true", required=False)
-    parser.add_argument("--SAVE_IMAGE", action="store_true", required=False)
     parser.add_argument(
         "--NO_EVENT_IMAGE", action="store_false", required=False, default=True
     )

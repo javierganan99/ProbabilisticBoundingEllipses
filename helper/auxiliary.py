@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as st
-from constant import *
+from parameters import *
 import math
 import cv2
 import rosbag
