@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use("TkAgg")
 
-bag_name = "5"
-path = "bags/12c/MovingCamera/"
+bag_name = "3"
+path = "bags/FarDistance/"
 
 path = path + bag_name + ".bag"  # Path to read the bag
 bag = rosbag.Bag(path)  # Bag object
@@ -135,19 +135,19 @@ def main():
         cv2.imshow("Persons", im0)
         cv2.waitKey(1)
         timestamp_ant = timestamp
+        dens = ceils.updateTimeEllipsoid(t,bb.axes)
         # Condition to reinitializate
-        if t > TIMEOUT and dens < DENSITY_LIM:
+        if t > TIMEOUT and dens < DENSITY_LIM_STOP:
             time_offset += t
             initiated = False
     store_bb = np.array(store_bb)
     store_pred = np.array(store_pred)
     plt.plot(time_YOLO, distances, c="green")
     # To save the plot
-    plt.xlabel("Time [s]")
-    plt.ylabel("Error [pix]")
+    plt.xlabel("Time [s]", fontsize = 17)
+    plt.ylabel("Error [px]", fontsize = 17)
     plt.grid()
     plt.show()
-    plt.savefig("YOLO_vs_OUR.png")
     # To save the data
     a = {"time_YOLO": time_YOLO, "distances": distances}
     with open("data.pickle", "wb") as handle:

@@ -4,13 +4,16 @@ import tensorflow as tf
 gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus:
   tf.config.experimental.set_memory_growth(gpu, True)
+
+import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator 
 from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
-base_dir = 'dataset/'
+base_dir = 'dataset_events/'
 train_data_dir = os.path.join(base_dir, 'train')
-#validation_data_dir = os.path.join(base_dir, 'val')
-#test_dir = os.path.join(base_dir, 'test')
+validation_data_dir = os.path.join(base_dir, 'val')
+
 model = tf.keras.models.Sequential([
 # Note the input shape is the desired size of the image 200x200 with 3 bytes color
 # This is the first convolution
@@ -39,11 +42,11 @@ tf.keras.layers.Dense(1, activation='sigmoid')
 model.summary()
 
 model.compile(loss='binary_crossentropy',
-            optimizer=RMSprop(lr=0.001),
+            optimizer=RMSprop(lr=0.00001),
             metrics=['accuracy'])
 
 train_datagen = ImageDataGenerator(rescale=1/255)
-#validation_datagen = ImageDataGenerator(rescale=1/255)
+validation_datagen = ImageDataGenerator(rescale=1/255)
 
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,  
@@ -51,20 +54,52 @@ train_generator = train_datagen.flow_from_directory(
     batch_size=8,
     class_mode='binary')
 
-# validation_generator = validation_datagen.flow_from_directory(
-#     validation_data_dir, 
-#     target_size=(100,100), 
-#     batch_size=5,
-#     class_mode='binary')
+validation_generator = validation_datagen.flow_from_directory(
+    validation_data_dir, 
+    target_size=(100,100), 
+    batch_size=5,
+    class_mode='binary')
+
+earlyStopping = EarlyStopping(monitor="val_loss", patience=20, verbose=0, mode="min")
+
+mcp_save = ModelCheckpoint(
+    "Best_Model_events.h5", save_best_only=True, monitor="val_loss", mode="min"
+)
+reduce_lr_loss = ReduceLROnPlateau(
+    monitor="val_loss", factor=0.1, patience=7, verbose=1, epsilon=1e-4, mode="min"
+)
 
 history = model.fit(
     train_generator,
     steps_per_epoch=None,  
-    epochs=10,
+    epochs=50,
     verbose=1,
-    validation_data = None, #validation_generator
-    validation_steps=None)
+    validation_data = validation_generator,
+    validation_steps=8,
+    callbacks=[earlyStopping, mcp_save, reduce_lr_loss]
+    )
 
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.ylabel('Accuracy [%]', fontsize = 30)
+plt.xlabel('Epochs', fontsize = 30)
+plt.legend(['train', 'validation'], loc='upper left', fontsize = 20)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
+plt.grid()
+plt.show()
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.ylabel('Loss', fontsize = 30)
+plt.xlabel('Epochs', fontsize = 30)
+plt.legend(['train', 'validation'], loc='upper left', fontsize = 20)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
+plt.grid()
+plt.show()
+    
 #print(model.evaluate(validation_generator))
-model.save('CUSTOM_Model_events.h5')
+model.save('Final_Model_events.h5')
 

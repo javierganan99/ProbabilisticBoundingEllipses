@@ -3,7 +3,6 @@ from cv_bridge import CvBridge as cvB
 import rosbag
 from helper.auxiliary import *
 from helper.draw import *
-
 import tensorflow as tf
 
 # IMPORTANT for GPU implementation!!!
@@ -13,8 +12,9 @@ for gpu in gpus:
 
 import rospy
 import argparse
-bag_name = "urban"
-path = "bags/"
+
+bag_name = "1"
+path = "bags/MiddleDistance/"
 
 path = path + bag_name + ".bag"  # Path to read the bag
 bag = rosbag.Bag(path)  # Bag object
@@ -38,7 +38,6 @@ def main(args):
     t = 0  # Time from the initialization
     cont_events = 0
     time_offset = 0
-    cont_saved = 0
     dens = 0
     timestamp_ant = rospy.Time.from_sec(bag.get_start_time())
     # Loop to process all the images
@@ -65,11 +64,9 @@ def main(args):
                 if args.DRAW_EVENTS:
                     im0[e.y, e.x] = (255, 255, 255)
                 t = e.ts.secs + e.ts.nsecs * 10**-9 - offset
-                check = bb.addEvent(e)  # Actualizamos la media y la varianza
+                check = bb.addEvent(e)  # Update mean and covariance matrix
                 if check:
-                    dens = ceils.updateEllipsoid(
-                        t, bb.axes
-                    )
+                    dens = cells.updateEllipsoid(t, bb.axes)
                 if args.PLOT_DENSITY:
                     pd.update(t, time_offset, dens)
 
@@ -78,7 +75,12 @@ def main(args):
                 cnn = False
             else:
                 cnn = True
-            if tracking == False and dens >= DENSITY_LIM and np.all(bb.axes != 0) and cnn:
+            if (
+                tracking == False
+                and dens >= DENSITY_LIM
+                and np.all(bb.axes != 0)
+                and cnn
+            ):
                 if args.NO_EVENT_IMAGE:
                     warped = crop(event_image, bb)
                     x = cv2.resize(
@@ -96,14 +98,14 @@ def main(args):
                         interpolation=cv2.INTER_NEAREST,
                     )
                 x = np.expand_dims(x, axis=0)
-                x = x / 255.0  # Necesario!!
+                x = x / 255.0
                 pred_model = model.predict(x)
         else:
             rows, cols = im0.shape[:2]
             if args.NO_EVENT_IMAGE:
                 event_image = np.zeros((rows, cols), dtype="float32")
             bb = BoundingBox(cols, rows)
-            ceils = exponentialCluster(im0.shape[1], im0.shape[0])
+            cells = exponentialCluster(im0.shape[1], im0.shape[0])
             # Storing the corresponding events (simulating real time)
             Events_arriving = [
                 e
@@ -124,24 +126,31 @@ def main(args):
 
         # Write the state
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(im0, text, (int(cols/1.5),int(rows/8)), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(
+            im0,
+            text,
+            (int(cols / 1.5), int(rows / 8)),
+            font,
+            0.5,
+            (0, 255, 0),
+            1,
+            cv2.LINE_AA,
+        )
         cv2.imshow("Person", im0)
-
-        if args.SAVE_IMAGE:
-            saveImage(im0, pred_model, cont_saved)
-            cont_saved += 1
 
         if args.NO_EVENT_IMAGE:
             cv2.imshow("Event_image", event_image)
             event_image *= 0.0
         cv2.waitKey(1)
         timestamp_ant = timestamp
-        dens = ceils.updateTimeEllipsoid(t,bb.axes)
+        dens = cells.updateTimeEllipsoid(t, bb.axes)
         # Condition to indicate the phase
-        if tracking == False and pred_model[0,0] >= 0.5: # Start Tracking
+        if tracking == False and pred_model[0, 0] >= 0.5:  # Start Tracking
             tracking = True
             text = "Tracking"
-        elif tracking == False and t > TIMEOUT and pred_model[0,0] < 0.5: # Reinitialize
+        elif (
+            tracking == False and t > TIMEOUT and pred_model[0, 0] < 0.5
+        ):  # Reinitialize
             time_offset += t
             initiated = False
         elif tracking == True and dens < DENSITY_LIM_STOP:
@@ -154,7 +163,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--PLOT_DENSITY", action="store_true", required=False)
-    parser.add_argument("--SAVE_IMAGE", action="store_true", required=False)
     parser.add_argument(
         "--NO_EVENT_IMAGE", action="store_false", required=False, default=True
     )

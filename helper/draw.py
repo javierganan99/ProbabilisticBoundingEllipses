@@ -3,15 +3,15 @@ import scipy.stats as st
 import cv2
 import matplotlib.pyplot as plt
 
-from constant import DENSITY_LIM
+from parameters import DENSITY_LIM
 
 
 class plotDensity:  # Class to dimanically plot the spatio-temporal density
     def __init__(self):
         self.store_time = []
         self.fig2, self.ax2 = plt.subplots(1)
-        self.line2 = self.ax2.plot([], [], "b", label="std")[0]
-        self.line22 = self.ax2.plot([], [], "r", label="Density_lim")[0]
+        self.line2 = self.ax2.plot([], [], "b", label="Density")[0]
+        self.line22 = self.ax2.plot([], [], "r", label="Density limit")[0]
         self.store_density = []
 
     def update(self, t, time_offset, dens):
@@ -28,6 +28,7 @@ class plotDensity:  # Class to dimanically plot the spatio-temporal density
         self.ax2.relim()
         self.fig2.canvas.draw()
         plt.pause(0.00001)
+
 
 
 class plotPred:  # Class to dinamically plot the prediction of the CNN
@@ -131,24 +132,3 @@ def drawEllipse(im0, bb):  # Function to draw confidence ellipsoid during tracki
         (255, 0, 158),
         thickness,
     )
-
-
-def saveImage(
-    im0, pred_model, cont_saved
-):  # Function to save the images depending on the CNN prediction
-    # It store the results in a folder named output that must previously exist
-    positive = "PERSON"
-    negative = "NOPERSON"
-
-    if pred_model[0, 0] > 0.5:
-        prediction = positive
-        cv2.imwrite(
-            "output/YES/" + str(cont_saved).zfill(5) + prediction + ".png",
-            im0,
-        )
-    else:
-        prediction = negative
-        cv2.imwrite(
-            "output/NO/" + str(cont_saved).zfill(5) + prediction + ".png",
-            im0,
-        )

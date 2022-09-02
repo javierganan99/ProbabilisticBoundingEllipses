@@ -52,7 +52,7 @@ from LoadDavis import LoadDavis
 @torch.no_grad()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
-        data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
+        data=None,
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.5,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
@@ -68,7 +68,7 @@ def run(
 
     # Load model
     device = select_device(device)
-    model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
+    model = DetectMultiBackend(weights, device=device, dnn=dnn, data=None, fp16=half)
     stride, names, pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)  # check image size
 
@@ -88,10 +88,7 @@ def run(
     t3 = time_sync()
     dt[1] += t3 - t2
 
-    # NMS 0 e lugar de None
-    pred = non_max_suppression(pred, conf_thres, iou_thres, None, agnostic_nms, multi_label=True, max_det=max_det) # Here is classes instead of 0
-    # if pred:
-    #     print("Esta es la predicción de YOLO!!!" , str(pred[0][:,4]))
+    pred = non_max_suppression(pred, conf_thres, iou_thres, None, agnostic_nms, multi_label=True, max_det=max_det)
     dt[2] += time_sync() - t3
 
     gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
@@ -105,6 +102,4 @@ def run(
             for *xyxy, conf, cls in reversed(det):
                 xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist()  # normalized xywh
                 list_of_preds.append([cls, xywh])
-    # Second-stage classifier (optional)
-    # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
     return list_of_preds

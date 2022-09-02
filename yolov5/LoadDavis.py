@@ -28,7 +28,7 @@ from utils.torch_utils import torch_distributed_zero_first
 
 
 class LoadDavis:
-    # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
+
     def __init__(self, sources='1', img_size=640, stride=32, auto=True):
         self.mode = 'stream'
         self.img_size = img_size

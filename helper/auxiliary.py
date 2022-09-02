@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as st
-from constant import *
+from parameters import *
 import math
 import cv2
 import rosbag
@@ -131,10 +131,10 @@ class exponentialCluster:
         self.h = 5  # Number of vertical divisions for cell calulation
         self.t_ant = 0  # Previous time instant
         self.width, self.height = width, height  # Image dimensions
-        self.ceils = np.zeros((self.h, self.w))
-        self.ceilsMean = np.zeros((self.h, self.w))
+        self.cells = np.zeros((self.h, self.w))
+        self.cellsMean = np.zeros((self.h, self.w))
         self.areas = np.zeros((self.h, self.w))
-        self.ceilArea = (self.width / self.w) * (self.height / self.h)
+        self.cellArea = (self.width / self.w) * (self.height / self.h)
         self.densityBB = 0
     
     def updateTimeEllipsoid(self, t, axes):
@@ -142,15 +142,15 @@ class exponentialCluster:
         self.t_ant = t
         return self.densityBB / (math.pi * axes[0] * axes[1])
 
-    def updateCeils(self, x, y, t):  # Update the density of each cell of the image
-        self.ceils *= math.exp((-t + self.t_ant) * TAU)
+    def updateCells(self, x, y, t):  # Update the density of each cell of the image
+        self.cells *= math.exp((-t + self.t_ant) * TAU)
         self.t_ant = t
-        for iy, ix in np.ndindex(self.ceils.shape):
+        for iy, ix in np.ndindex(self.cells.shape):
             if (
                 ix / self.w <= x / self.width <= (ix + 1) / self.w
                 and iy / self.h <= y / self.height <= (iy + 1) / self.h
             ):
-                self.ceils[iy, ix] += 1
+                self.cells[iy, ix] += 1
                 return
 
     def updateEllipsoid(
@@ -161,12 +161,12 @@ class exponentialCluster:
         self.t_ant = t
         return self.densityBB / (math.pi * axes[0] * axes[1])
 
-    def updateCeilsMean(self): 
-        self.ceilsMean = self.ceils - self.ceils.mean()
-        return self.ceils.std(), self.ceils.mean()
+    def updatecellsMean(self): 
+        self.cellsMean = self.cells - self.cells.mean()
+        return self.cells.std(), self.cells.mean()
 
-    def drawMax(self):
-        ind = np.unravel_index(np.argmax(self.ceils, axis=None), self.ceils.shape)
+    def selectMax(self):
+        ind = np.unravel_index(np.argmax(self.cells, axis=None), self.cells.shape)
         start_point = (
             int(ind[1] / self.w * self.width),
             int(ind[0] / self.h * self.height),
@@ -177,11 +177,11 @@ class exponentialCluster:
         )
         return start_point, end_point
 
-    def drawMaxPercentage(self, perc=0.6):
+    def selectMaxPercentage(self, perc=0.6):
         start_points = []
         end_points = []
-        max_density = self.ceils.max()
-        indexes = np.where(self.ceils >= perc * max_density)
+        max_density = self.cells.max()
+        indexes = np.where(self.cells >= perc * max_density)
         indexes = np.asarray(indexes)
         for i in range(len(indexes[0])):
             start_points.append(
@@ -198,16 +198,16 @@ class exponentialCluster:
             )
         return start_points, end_points
 
-    def updateArea(self, x, y, t):
-        self.ceils *= math.exp((-t + self.t_ant) * TAU) / self.ceilArea
-        for iy, ix in np.ndindex(self.ceils.shape):
+    def updateArea(self, x, y, t): # Update the cells taking the are of each one into account
+        self.cells *= math.exp((-t + self.t_ant) * TAU)
+        for iy, ix in np.ndindex(self.cells.shape):
             if (
                 ix / self.w <= x / self.width <= (ix + 1) / self.w
                 and iy / self.h <= y / self.height <= (iy + 1) / self.h
             ):
-                self.ceils[iy, ix] += 1
+                self.cells[iy, ix] += 1
                 break
-        self.areas += (t - self.t_ant) * self.ceils
+        self.areas = self.cells / self.cellArea
         self.t_ant = t
 
 def crop(img, bb):
@@ -231,14 +231,15 @@ def crop(img, bb):
         s[0] += py
         py = 0
     warped = warped[py:int(py+s[0]), px:int(px+s[1])]
-    print(s)
     return warped
 
 def readBag(bag_name, path):
     path = path + bag_name + ".bag" # Path to read the bag
     bag = rosbag.Bag(path)          # Bag object
+    topic_events = "/dvs/events"
+    topic_images = "/dvs/image_raw"
     # Storing the events
-    Event_dataset = [e for events in bag.read_messages(topics="/dvs/events") for e in events.message.events]
+    Event_dataset = [e for events in bag.read_messages(topics=topic_events) for e in events.message.events]
     # Storing the images
-    Images_dataset = [images for images in bag.read_messages("/dvs/image_raw")]
+    Images_dataset = [images for images in bag.read_messages(topic_images)]
     return Event_dataset, Images_dataset
