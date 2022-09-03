@@ -115,7 +115,7 @@ def save_images_from_video(input_path, output_path, stride=30):
         cont_images += 1
 
 
-def images_to_gray(input_path, output_path, show=False, subsample=None):
+def images_to_gray(input_path, output_path, subsample=None):
     """This function extract images from "imput_path" folder,
     convert them to grayscale and write them in "output_path" folder
     """
@@ -128,9 +128,6 @@ def images_to_gray(input_path, output_path, show=False, subsample=None):
         gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
         gray = np.stack((gray,) * 3, axis=-1)
         cv2.imwrite(output_path + "/" + image, gray)
-        if show:
-            cv2.imshow("Person", gray)
-            cv2.waitKey(1)
 
 
 def images_to_edges(input_path, output_path, show=False, subsample=None):
