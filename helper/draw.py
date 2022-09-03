@@ -10,8 +10,8 @@ class plotDensity:  # Class to dimanically plot the spatio-temporal density
     def __init__(self):
         self.store_time = []
         self.fig2, self.ax2 = plt.subplots(1)
-        self.line2 = self.ax2.plot([], [], "b", label="std")[0]
-        self.line22 = self.ax2.plot([], [], "r", label="Density_lim")[0]
+        self.line2 = self.ax2.plot([], [], "b", label="Density")[0]
+        self.line22 = self.ax2.plot([], [], "r", label="Density limit")[0]
         self.store_density = []
 
     def update(self, t, time_offset, dens):
@@ -27,7 +27,9 @@ class plotDensity:  # Class to dimanically plot the spatio-temporal density
         self.ax2.autoscale_view(True)
         self.ax2.relim()
         self.fig2.canvas.draw()
+        self.fig2.savefig('density.png')
         plt.pause(0.00001)
+
 
 
 class plotPred:  # Class to dinamically plot the prediction of the CNN

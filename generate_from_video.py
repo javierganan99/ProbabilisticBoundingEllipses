@@ -1,4 +1,4 @@
-from tools import *
+from dataset_tools import *
 import os
 
 video_path = "/your_video_location/your_video"  # Add here the path to your video!!
@@ -7,13 +7,15 @@ output_path = "frames/"
 if not os.path.exists(output_path):
     os.mkdir(output_path)
 
-save_images_from_video(
-    video_path, output_path, stride=30
-)  # Saving the frames of the video (1 in 30)
+# save_images_from_video(
+#     video_path, output_path, stride=30
+# )  # Saving the frames of the video (1 in 30)
 
 input_path = "frames/"
 output_path = ""
-yolo_crop(input_path, output_path, show=True, size=(100, 100)) #Cropping persons
+yolo_crop(
+    input_path, output_path, show=True, size=(100, 100)
+)  # Cropping persons and no persons
 
 input_path = "RGBpersons/"
 output_path = "persons/"

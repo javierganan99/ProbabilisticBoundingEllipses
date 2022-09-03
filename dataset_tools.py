@@ -6,6 +6,7 @@ import os
 import random
 import shutil
 import sys
+import rospy
 
 
 def salt_pepper(img):
@@ -53,25 +54,49 @@ class events_image_simulated:
         return self.im
 
 
-def save_images_from_bag(input_path, output_path, show=False):
+def save_images_from_bag(input_path, output_path, stride=30):
     """This function extract images from "imput_path" .bag file
     and write them in "output_path" folder
     """
-
+    topic_images = "/dvs/image_raw"
+    topic_events = "/dvs/events"
     bridge = cvB()  # To convert image format to cv
     bag = rosbag.Bag(input_path)  # Bag object
     # Storing the images
-    Images_dataset = [images for images in bag.read_messages("/dvs/image_raw")]
     cont_images = 0  # To name the images
-    for images in Images_dataset:
+    cont_saved = 0  # To count the saved images
+    timestamp_ant = rospy.Time.from_sec(bag.get_start_time())
+    if not os.path.exists(output_path + "frames"):
+        os.mkdir(output_path + "frames")
+    if not os.path.exists(output_path + "eventImages"):
+        os.mkdir(output_path + "eventImages")
+    for images in bag.read_messages(topic_images):
+        timestamp = images.timestamp
         cv_image = bridge.imgmsg_to_cv2(images.message)
         cv_image = cv2.cvtColor(cv_image, cv2.COLOR_GRAY2RGB)
-        if cont_images % 20 == 0:
-            cv2.imwrite(output_path + str(cont_images).zfill(5) + ".png", cv_image)
+        rows, cols = cv_image.shape[:2]
+        event_image = np.zeros((rows, cols), dtype="float32")
+        if cont_images % stride == 0:
+            Events_arriving = [
+                e
+                for events in bag.read_messages(
+                    topics=topic_events, start_time=timestamp_ant, end_time=timestamp
+                )
+                for e in events.message.events
+            ]
+            for e in Events_arriving:
+                event_image[e.y, e.x] = 255.0
+            if np.sum(event_image) != 0:
+                cv2.imwrite(
+                    output_path + "eventImages/" + str(cont_saved).zfill(5) + ".png",
+                    event_image,
+                )
+                cv2.imwrite(
+                output_path + "frames/" + str(cont_saved).zfill(5) + ".png", cv_image
+                )
+            cont_saved += 1
+        timestamp_ant = timestamp
         cont_images += 1
-        if show:
-            cv2.imshow("Person", cv_image)
-            cv2.waitKey(1)
 
 
 def save_images_from_video(input_path, output_path, stride=30):
@@ -213,9 +238,9 @@ def yolo_crop(input_path, output_path, show=False, size=(100, 100), bb_aug=0):
                 bb = p[1]
                 cropped = im0[
                     np.clip(int(bb[1] - bb[3] * af), 0, rows) : np.clip(
-                        int(bb[1] + bb[3] * af), 0, cols
+                        int(bb[1] + bb[3] * af), 0, rows
                     ),
-                    np.clip(int(bb[0] - bb[2] * af), 0, rows) : np.clip(
+                    np.clip(int(bb[0] - bb[2] * af), 0, cols) : np.clip(
                         int(bb[0] + bb[2] * af), 0, cols
                     ),
                 ]
@@ -244,9 +269,9 @@ def yolo_crop(input_path, output_path, show=False, size=(100, 100), bb_aug=0):
                 bb = p[1]
                 cropped = im0[
                     np.clip(int(bb[1] - bb[3] * af), 0, rows) : np.clip(
-                        int(bb[1] + bb[3] * af), 0, cols
+                        int(bb[1] + bb[3] * af), 0, rows
                     ),
-                    np.clip(int(bb[0] - bb[2] * af), 0, rows) : np.clip(
+                    np.clip(int(bb[0] - bb[2] * af), 0, cols) : np.clip(
                         int(bb[0] + bb[2] * af), 0, cols
                     ),
                 ]
@@ -272,6 +297,115 @@ def yolo_crop(input_path, output_path, show=False, size=(100, 100), bb_aug=0):
                         2,
                     )
 
+        if show:
+            cv2.imshow("Person", im2)
+            cv2.waitKey(1)
+
+
+def yolo_crop_events(input_path_frames, input_path_events, output_path, show=False, size=(100, 100), bb_aug=0):
+    """This function extract images from "imput_path" folder,
+    apply YOLO to detect persons, crop the corresponding event images,
+    resize to indicated size, and save the cropped persons into "output_path" folder.
+    """
+    p = os.path.abspath(".")
+    sys.path.insert(1, p)
+    from yolov5.detect_multiple import run as yolo
+    from yolov5.utils.augmentations import letterbox
+
+    img_size = 640  # Size to convert the image to the proper yolo size
+    stride = 32  # Parameter for yolo
+    cont_images_persons = 0  # To count the persons detected by yolo
+    cont_images_NO_persons = 0  # To count the non-persons detected by yolo
+    Images = [f for f in os.listdir(input_path_frames) if f.endswith(".png")]
+    Images_events = [f for f in os.listdir(input_path_events) if f.endswith(".png")]
+    rows, cols = cv2.imread(input_path_frames + Images[0]).shape[:2]
+
+    path = output_path + "persons/"
+    if not os.path.exists(path):
+        os.mkdir(path)
+    path = output_path + "noPersons"
+
+    if not os.path.exists(path):
+        os.mkdir(path)
+    for (image, ev_im) in zip(Images, Images_events):
+        cv_image = cv2.imread(input_path_frames + image)
+        ev_image = cv2.imread(input_path_events + ev_im)
+        if len(cv_image.shape) < 3:
+            cv_image = cv2.cvtColor(cv_image, cv2.COLOR_GRAY2RGB)
+        im0 = cv_image.copy()  # Image in the original format
+        if show:
+            im2 = im0.copy()
+        cv_image = letterbox(cv_image, img_size, stride=stride)[0].transpose(
+            2, 0, 1
+        )  # Converting image to yolo format
+        # Using yolo for detecting the person
+        pred = yolo(im=cv_image, im0=im0)
+        af = 0.5 * (
+            1 + random.randint(0, bb_aug) * 0.1
+        )  # Augmentation factor for half width & height
+        for p in pred:
+            if p[0] == 0:
+                bb = p[1]
+                cropped = ev_image[
+                    np.clip(int(bb[1] - bb[3] * af), 0, rows) : np.clip(
+                        int(bb[1] + bb[3] * af), 0, rows
+                    ),
+                    np.clip(int(bb[0] - bb[2] * af), 0, cols) : np.clip(
+                        int(bb[0] + bb[2] * af), 0, cols
+                    ),
+                ]
+                x = cv2.resize(
+                    cropped,
+                    size,
+                    interpolation=cv2.INTER_NEAREST,
+                )
+                cv2.imwrite(
+                    output_path
+                    + "persons/"
+                    + str(cont_images_persons).zfill(5)
+                    + ".png",
+                    x,
+                )
+                cont_images_persons += 1
+                if show:
+                    im2 = cv2.rectangle(
+                        im2,
+                        (int(bb[0] - bb[2] / 2), int(bb[1] - bb[3] / 2)),
+                        (int(bb[0] + bb[2] / 2), int(bb[1] + bb[3] / 2)),
+                        (0, 255, 0),
+                        2,
+                    )
+            else:
+                bb = p[1]
+                cropped = ev_image[
+                    np.clip(int(bb[1] - bb[3] * af), 0, rows) : np.clip(
+                        int(bb[1] + bb[3] * af), 0, rows
+                    ),
+                    np.clip(int(bb[0] - bb[2] * af), 0, cols) : np.clip(
+                        int(bb[0] + bb[2] * af), 0, cols
+                    ),
+                ]
+                x = cv2.resize(
+                    cropped,
+                    size,
+                    interpolation=cv2.INTER_NEAREST,
+                )
+                cv2.imwrite(
+                    output_path
+                    + "noPersons/"
+                    + str(cont_images_NO_persons).zfill(5)
+                    + ".png",
+                    x,
+                )
+                cont_images_NO_persons += 1
+                if show:
+                    im2 = cv2.rectangle(
+                        im2,
+                        (int(bb[0] - bb[2] / 2), int(bb[1] - bb[3] / 2)),
+                        (int(bb[0] + bb[2] / 2), int(bb[1] + bb[3] / 2)),
+                        (0, 0, 255),
+                        2,
+                    )
         if show:
             cv2.imshow("Person", im2)
             cv2.waitKey(1)
