@@ -316,6 +316,7 @@ def yolo_crop_events(input_path_frames, input_path_events, output_path, show=Fal
     stride = 32  # Parameter for yolo
     cont_images_persons = 0  # To count the persons detected by yolo
     cont_images_NO_persons = 0  # To count the non-persons detected by yolo
+    cont = 0
     Images = [f for f in os.listdir(input_path_frames) if f.endswith(".png")]
     Images_events = [f for f in os.listdir(input_path_events) if f.endswith(".png")]
     rows, cols = cv2.imread(input_path_frames + Images[0]).shape[:2]
@@ -409,6 +410,9 @@ def yolo_crop_events(input_path_frames, input_path_events, output_path, show=Fal
         if show:
             cv2.imshow("Person", im2)
             cv2.waitKey(1)
+        cv2.imwrite("output/" + str(cont).zfill(5)
+                    + ".png", im2)
+        cont += 1
 
 
 def crop_from_label(path_images, path_anotations, path_output, size=(100, 100)):

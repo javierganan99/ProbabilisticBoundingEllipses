@@ -1,7 +1,7 @@
 from dataset_tools import *
 import os
 
-bag_path =  "/your_bag_location/your_bag_name"  # Add here the path to your video!!
+bag_path =  "bags/MiddleDistance/5.bag" #"/your_bag_location/your_bag_name"  # Add here the path to your video!!
 
 output_path = ""
 

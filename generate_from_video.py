@@ -7,9 +7,9 @@ output_path = "frames/"
 if not os.path.exists(output_path):
     os.mkdir(output_path)
 
-# save_images_from_video(
-#     video_path, output_path, stride=30
-# )  # Saving the frames of the video (1 in 30)
+save_images_from_video(
+    video_path, output_path, stride=30
+)  # Saving the frames of the video (1 in 30)
 
 input_path = "frames/"
 output_path = ""
