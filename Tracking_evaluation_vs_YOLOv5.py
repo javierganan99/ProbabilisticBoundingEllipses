@@ -144,11 +144,10 @@ def main():
     store_pred = np.array(store_pred)
     plt.plot(time_YOLO, distances, c="green")
     # To save the plot
-    plt.xlabel("Time [s]", fontsize = 20)
-    plt.ylabel("Error [px]", fontsize = 20)
+    plt.xlabel("Time [s]", fontsize = 17)
+    plt.ylabel("Error [px]", fontsize = 17)
     plt.grid()
     plt.show()
-    plt.savefig("YOLO_vs_OUR.png")
     # To save the data
     a = {"time_YOLO": time_YOLO, "distances": distances}
     with open("data.pickle", "wb") as handle:
