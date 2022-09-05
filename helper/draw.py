@@ -27,7 +27,6 @@ class plotDensity:  # Class to dimanically plot the spatio-temporal density
         self.ax2.autoscale_view(True)
         self.ax2.relim()
         self.fig2.canvas.draw()
-        self.fig2.savefig('density.png')
         plt.pause(0.00001)
 
 

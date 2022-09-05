@@ -66,7 +66,7 @@ def main(args):
                 t = e.ts.secs + e.ts.nsecs * 10**-9 - offset
                 check = bb.addEvent(e)  # Actualizamos la media y la varianza
                 if check:
-                    dens = ceils.updateEllipsoid(
+                    dens = cells.updateEllipsoid(
                         t, bb.axes
                     )
                 if args.PLOT_DENSITY:
@@ -102,7 +102,7 @@ def main(args):
             if args.NO_EVENT_IMAGE:
                 event_image = np.zeros((rows, cols), dtype="float32")
             bb = BoundingBox(cols, rows)
-            ceils = exponentialCluster(im0.shape[1], im0.shape[0])
+            cells = exponentialCluster(im0.shape[1], im0.shape[0])
             # Storing the corresponding events (simulating real time)
             Events_arriving = [
                 e
@@ -131,7 +131,7 @@ def main(args):
             event_image *= 0.0
         cv2.waitKey(1)
         timestamp_ant = timestamp
-        dens = ceils.updateTimeEllipsoid(t,bb.axes)
+        dens = cells.updateTimeEllipsoid(t,bb.axes)
         # Condition to indicate the phase
         if tracking == False and pred_model[0,0] >= 0.5: # Start Tracking
             tracking = True

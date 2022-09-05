@@ -20,8 +20,6 @@ while total < len(test_generator):
     pred = model.predict(image[0])
     if (pred[0][1] >= 0.5 and image[1] == 1) or (pred[0][1] < 0.5 and image[1] == 0):
         cont += 1
-    print(image[1])
     total += 1
-    print(pred)
     
 print("El rendimiento sobre el conjunto de test es: " + cont/total * 100)

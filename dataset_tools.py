@@ -13,9 +13,8 @@ def salt_pepper(img):
     """This function adds salt and
     pepper noise to images
     """
-
     row, col = img.shape
-    number_of_pixels = random.randint(int(row * col / 200), int(row * col / 100))
+    number_of_pixels = random.randint(int(row * col / 600), int(row * col / 400))
     for i in range(number_of_pixels):
         y_coord = random.randint(0, row - 1)
         x_coord = random.randint(0, col - 1)
@@ -32,8 +31,6 @@ class events_image_simulated:
     event images from an image dataset
     """
 
-    # vert = range(400, 50, -50)
-    # hor = range(400, 50, -50)
     i = 200
     j = 200
 
@@ -42,14 +39,6 @@ class events_image_simulated:
 
     def generate_events(self, im):
         self.im = cv2.Canny(im, self.i, self.j)  # self.vert[self.i], self.hor[self.j])
-        # if self.i >= len(self.vert) - 1:
-        #     self.i = 0
-        #     self.j += 1
-        # else:
-        #     self.i += 1
-        # if self.j >= len(self.hor) - 1 and self.i >= len(self.vert) - 1:
-        #     self.i = 0
-        #     self.j = 0
         self.im = self.salt_pepper(self.im)
         return self.im
 
@@ -92,7 +81,8 @@ def save_images_from_bag(input_path, output_path, stride=30):
                     event_image,
                 )
                 cv2.imwrite(
-                output_path + "frames/" + str(cont_saved).zfill(5) + ".png", cv_image
+                    output_path + "frames/" + str(cont_saved).zfill(5) + ".png",
+                    cv_image,
                 )
             cont_saved += 1
         timestamp_ant = timestamp
@@ -141,9 +131,9 @@ def images_to_edges(input_path, output_path, show=False, subsample=None):
     if subsample is not None:
         Images = random.sample(Images, subsample)
     for image in Images:
-        im = cv2.imread(str(input_path) + "/" + image)
+        im = cv2.imread(str(input_path) + image)
         edges = ev.generate_events(im)
-        cv2.imwrite(output_path + "/" + image, edges)
+        cv2.imwrite(output_path + image, edges)
         if show:
             cv2.imshow("Person", edges)
             cv2.waitKey(1)
@@ -192,8 +182,8 @@ def train_test_split(classes_names, input_dir, output_dir):
 
 
 def yolo_crop(input_path, output_path, show=False, size=(100, 100), bb_aug=0):
-    """This function extract images from "imput_path" folder,
-    apply YOLO to detect persons, crop them, resize to indicated size,
+    """This function extract images from "imput_path" folder, apply YOLO
+    to detect persons and non persons objects, crop them, resize to indicated size,
     and save the cropped persons into "output_path" folder.
     """
     p = os.path.abspath(".")
@@ -299,7 +289,14 @@ def yolo_crop(input_path, output_path, show=False, size=(100, 100), bb_aug=0):
             cv2.waitKey(1)
 
 
-def yolo_crop_events(input_path_frames, input_path_events, output_path, show=False, size=(100, 100), bb_aug=0):
+def yolo_crop_events(
+    input_path_frames,
+    input_path_events,
+    output_path,
+    show=False,
+    size=(100, 100),
+    bb_aug=0,
+):
     """This function extract images from "imput_path" folder,
     apply YOLO to detect persons, crop the corresponding event images,
     resize to indicated size, and save the cropped persons into "output_path" folder.
@@ -407,8 +404,7 @@ def yolo_crop_events(input_path_frames, input_path_events, output_path, show=Fal
         if show:
             cv2.imshow("Person", im2)
             cv2.waitKey(1)
-        cv2.imwrite("output/" + str(cont).zfill(5)
-                    + ".png", im2)
+        cv2.imwrite("output/" + str(cont).zfill(5) + ".png", im2)
         cont += 1
 
 

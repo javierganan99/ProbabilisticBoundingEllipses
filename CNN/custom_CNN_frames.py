@@ -12,7 +12,6 @@ for gpu in gpus:
 base_dir = "dataset_frames/"
 train_data_dir = os.path.join(base_dir, "train")
 validation_data_dir = os.path.join(base_dir, "val")
-test_dir = os.path.join(base_dir, "test")
 
 model = tf.keras.models.Sequential(
     [
@@ -50,25 +49,38 @@ model.compile(
 )
 
 train_datagen = ImageDataGenerator(
-    brightness_range=[0,1.5],
+    brightness_range=[0.2,1.5],
     rescale=1 / 255
 )
+validation_datagen = ImageDataGenerator(rescale=1 / 255)
 
-# datagen = ImageDataGenerator(width_shift_range=[-100, 100],          
-#                     height_shift_range=[-100, 100], 
-#                     rotation_range=120, brightness_range=[0.2, 1.5],
-#                     zoom_range = [0.3, 1.5] ,shear_range=50)
-
-pic = train_datagen.flow_from_directory(
-    train_data_dir, target_size=(100, 100), batch_size=1, class_mode="binary"
+train_generator = train_datagen.flow_from_directory(
+    train_data_dir, target_size=(100, 100), batch_size=20, class_mode="binary"
 )
-# pic = train_datagen.flow(img_tensor, batch_size =1)
-import matplotlib.pyplot as plt
-plt.figure(figsize=(16, 16))#Plots our figures
-for j in range(1000):
-    for i in range(1,17):
-       plt.subplot(4, 4, i)
-       batch = pic.next()
-       image_ = batch[0][0]#.astype(‘uint8’)
-       plt.imshow(image_)
-    plt.show()
+
+validation_generator = validation_datagen.flow_from_directory(
+    validation_data_dir, target_size=(100, 100), batch_size=5, class_mode="binary"
+)
+
+
+earlyStopping = EarlyStopping(monitor="val_loss", patience=10, verbose=0, mode="min")
+
+mcp_save = ModelCheckpoint(
+    "Best_Model.h5", save_best_only=True, monitor="val_loss", mode="min"
+)
+reduce_lr_loss = ReduceLROnPlateau(
+    monitor="val_loss", factor=0.1, patience=7, verbose=1, epsilon=1e-4, mode="min"
+)
+
+history = model.fit_generator(
+    train_generator,
+    epochs=20,
+    verbose=1,
+    validation_data=validation_generator,
+    validation_steps=8,
+    callbacks=[earlyStopping, mcp_save, reduce_lr_loss]
+)
+
+#print(model.evaluate(validation_generator))
+
+model.save("Final_Model.h5")
