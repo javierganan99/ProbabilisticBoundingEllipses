@@ -4,6 +4,7 @@ import tensorflow as tf
 gpus = tf.config.experimental.list_physical_devices('GPU')
 for gpu in gpus:
   tf.config.experimental.set_memory_growth(gpu, True)
+
 from tensorflow.keras.preprocessing.image import ImageDataGenerator 
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
@@ -70,7 +71,7 @@ reduce_lr_loss = ReduceLROnPlateau(
 history = model.fit(
     train_generator,
     steps_per_epoch=None,  
-    epochs=10,
+    epochs=30,
     verbose=1,
     validation_data = validation_generator,
     validation_steps=8,
