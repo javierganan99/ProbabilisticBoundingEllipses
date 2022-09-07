@@ -14,13 +14,13 @@ for gpu in gpus:
 import rospy
 import argparse
 bag_name = "1"
-path = "bags/MiddleDistance/"
+path = "bags/FarDistance/"
 
 path = path + bag_name + ".bag"  # Path to read the bag
 bag = rosbag.Bag(path)  # Bag object
 
-topic_images = "/dvs/image_raw"
-topic_events = "/dvs/events"
+topic_images = "/cam0/image_raw"
+topic_events = "/cam0/events"
 
 
 def main(args):
