@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-
+import matplotlib.pyplot as plt
 # IMPORTANT!!!
 gpus = tf.config.experimental.list_physical_devices("GPU")
 for gpu in gpus:
@@ -66,7 +66,7 @@ validation_generator = validation_datagen.flow_from_directory(
 earlyStopping = EarlyStopping(monitor="val_loss", patience=10, verbose=0, mode="min")
 
 mcp_save = ModelCheckpoint(
-    "Best_Model.h5", save_best_only=True, monitor="val_loss", mode="min"
+    "Best_Model_frames.h5", save_best_only=True, monitor="val_loss", mode="min"
 )
 reduce_lr_loss = ReduceLROnPlateau(
     monitor="val_loss", factor=0.1, patience=7, verbose=1, epsilon=1e-4, mode="min"
@@ -74,13 +74,38 @@ reduce_lr_loss = ReduceLROnPlateau(
 
 history = model.fit_generator(
     train_generator,
-    epochs=20,
+    epochs=30,
     verbose=1,
     validation_data=validation_generator,
     validation_steps=8,
     callbacks=[earlyStopping, mcp_save, reduce_lr_loss]
 )
 
+
+
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.ylabel('Accuracy [%]', fontsize = 30)
+plt.xlabel('Epochs', fontsize = 30)
+plt.legend(['train', 'validation'], loc='upper left', fontsize = 20)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
+plt.grid()
+plt.show()
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.ylabel('Loss', fontsize = 30)
+plt.xlabel('Epochs', fontsize = 30)
+plt.legend(['train', 'validation'], loc='upper left', fontsize = 20)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
+plt.grid()
+plt.show()
+
+
+
 #print(model.evaluate(validation_generator))
 
-model.save("Final_Model.h5")
+model.save("Final_Model_frames.h5")

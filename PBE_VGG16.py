@@ -15,6 +15,7 @@ for gpu in gpus:
 
 import rospy
 import argparse
+
 bag_name = "cat"
 path = "bags/"
 
@@ -61,11 +62,9 @@ def main(args):
                 if args.DRAW_EVENTS:
                     im0[e.y, e.x] = (255, 255, 255)
                 t = e.ts.secs + e.ts.nsecs * 10**-9 - offset
-                check = bb.addEvent(e)  # Actualizamos la media y la varianza
+                check = bb.addEvent(e)  # Update mean and covariance matrix
                 if check:
-                    dens = ceils.updateEllipsoid(
-                        t, bb.axes
-                    )
+                    dens = ceils.updateEllipsoid(t, bb.axes)
                 if args.PLOT_DENSITY:
                     pd.update(t, time_offset, dens)
 
@@ -78,15 +77,15 @@ def main(args):
                     interpolation=cv2.INTER_NEAREST,
                 )
                 x = x.reshape((1, x.shape[0], x.shape[1], x.shape[2]))
-                #x = np.expand_dims(x, axis=0)
+                # x = np.expand_dims(x, axis=0)
                 x = x / 255.0  # Necesario!!
-                pred = model.predict(x)   #predict_classes(np.expand_dims(x, axis=0))[0]
+                pred = model.predict(x)  # predict_classes(np.expand_dims(x, axis=0))[0]
                 # convert the probabilities to class labels
                 label = decode_predictions(pred)
                 # retrieve the most likely result, e.g. highest probability
                 label = label[0][0]
                 # print the classification
-                print('%s (%.2f%%)' % (label[1], label[2]*100))
+                print("%s (%.2f%%)" % (label[1], label[2] * 100))
         else:
             rows, cols = im0.shape[:2]
             event_image = np.zeros((rows, cols), dtype="float32")
@@ -112,19 +111,28 @@ def main(args):
 
         # Write the state
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(im0, text, (int(cols/1.5),int(rows/8)), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(
+            im0,
+            text,
+            (int(cols / 1.5), int(rows / 8)),
+            font,
+            0.5,
+            (0, 255, 0),
+            1,
+            cv2.LINE_AA,
+        )
         cv2.imshow("Person", im0)
 
         cv2.imshow("Event_image", event_image)
         event_image *= 0.0
         cv2.waitKey(1)
         timestamp_ant = timestamp
-        dens = ceils.updateTimeEllipsoid(t,bb.axes)
+        dens = ceils.updateTimeEllipsoid(t, bb.axes)
         # Condition to indicate the phase
-        if tracking == False and dens >= DENSITY_LIM: # Start Tracking
+        if tracking == False and dens >= DENSITY_LIM:  # Start Tracking
             tracking = True
             text = "Tracking"
-        elif tracking == False and t > TIMEOUT: # Reinitialize
+        elif tracking == False and t > TIMEOUT:  # Reinitialize
             time_offset += t
             initiated = False
         elif tracking == True and dens < DENSITY_LIM_STOP:
