@@ -9,3 +9,5 @@ The method tracks a single moving-object using a probabilistic distribution that
 The content of this source code is detailed in the Master Thesis.
 
 This code has been tested in Python 3.8.10 version. Yolov5 Pytorch Version publicly available in https://github.com/ultralytics/yolov5 has been adapted and included in this repo for comparison purposes.
+
+In order to download the bag folder to test the method click in the following link: https://drive.google.com/file/d/1VV7J2cGZaovW0RXHPXAffqXKBp1-Yw4m/view?usp=sharing
