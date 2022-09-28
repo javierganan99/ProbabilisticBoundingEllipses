@@ -6,7 +6,6 @@
 |:--:|:--:|
 | *Daylight outdoor scenario* | *Indoor scenario* |
 | ![Pitch dark conditions](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/videos/GIF_night.gif) | ![General purpose tracking](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/videos/GIF_cat.gif) |
-|:--:|:--:|
 | *Pitch dark conditions* | *General purpose tracking* |
 
 The method tracks moving objects using a probabilistic distribution that is updated event by event, but the processing of each event involves few low-cost operations, enabling online execution on resource-constrained onboard computers. The method has been experimentally validated in several real scenarios under different lighting conditions, evidencing its accurate performance, and some of the recorded bag files are available in the bag folder of this respository.
