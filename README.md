@@ -1,5 +1,5 @@
 # ProbabilisticBoundingEllipses
- This repo is part of the Master Thesis of Francisco Javier Gañán Onieva for the Máster Universitario en Lógica, Computación e Inteligencia Artificial of Universidad de Sevilla, named **Application of machine learning techniques in event-based vision**.
+ This repo is part of the Master Thesis of Francisco Javier Gañán Onieva for the Máster Universitario en Lógica, Computación e Inteligencia Artificial of Universidad de Sevilla, named **Efficient Event-based Moving Object Localisation and Tracking using Probabilistic Distributions**.
 
 ## Event-by-event Probabilistic Tracking
 ![](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/method.gif)
