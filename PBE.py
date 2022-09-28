@@ -3,7 +3,6 @@ from cv_bridge import CvBridge as cvB
 import rosbag
 from helper.auxiliary import *
 from helper.draw import *
-
 import tensorflow as tf
 
 # IMPORTANT for GPU implementation!!!
