@@ -3,11 +3,13 @@
 
 ## Event-by-event Probabilistic Tracking
 | ![Daylight outdoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/method.gif) | 
-|:--:| 
+|:--:|
 | *Daylight outdoor scenario* |
+
 | ![Indoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_room.gif) | 
-|:--:| 
+|:--:|
 | *Indoor scenario* |
+
 | ![Pitch dark conditions](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_night.gif) | 
 |:--:| 
 | *Pitch dark conditions* |
