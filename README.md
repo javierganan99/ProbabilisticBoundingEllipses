@@ -5,7 +5,7 @@
 ![](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/method.gif)
 ![](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_room.gif)
 
-The method tracks a single moving-object using a probabilistic distribution that is updated event by event, but the processing of each event involves few low-cost operations, enabling online execution on resource-constrained onboard computers. The method has been experimentally validated in several real scenarios under different lighting conditions, evidencing its accurate performance, and some of the recorded bag files are available in the bag folder of this respository.
+The method tracks moving objects using a probabilistic distribution that is updated event by event, but the processing of each event involves few low-cost operations, enabling online execution on resource-constrained onboard computers. The method has been experimentally validated in several real scenarios under different lighting conditions, evidencing its accurate performance, and some of the recorded bag files are available in the bag folder of this respository.
 
 The content of this source code is detailed in the Master Thesis.
 
