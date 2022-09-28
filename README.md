@@ -2,9 +2,9 @@
  This repo is part of the Master Thesis of Francisco Javier Gañán Onieva for the Máster Universitario en Lógica, Computación e Inteligencia Artificial of Universidad de Sevilla, named **Efficient Event-based Moving Object Localisation and Tracking using Probabilistic Distributions**.
 
 ## Event-by-event Probabilistic Tracking
-| ![Daylight outdoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/method.gif) | ![Indoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_room.gif) | 
-|:--:|:--:|
-| *Daylight outdoor scenario* | *Indoor scenario* |
+| ![Daylight outdoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/method.gif) | ![Indoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_room.gif) | ![Pitch dark conditions](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_night.gif) | 
+|:--:|:--:|:--:|
+| *Daylight outdoor scenario* | *Indoor scenario* | *Pitch dark conditions* |
 
 | ![Indoor scenario](https://github.com/javierganan99/ProbabilisticBoundingEllipses/blob/main/GIF_room.gif) | 
 |:--:|
